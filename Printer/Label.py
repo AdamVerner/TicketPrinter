@@ -116,6 +116,9 @@ class Label(object):
 
         self.params[param] = value
 
+    def has_param(self, param):
+        return param in self.params.keys()
+    
     @property
     def zpl(self):
         data = self.raw_zpl
