@@ -111,6 +111,8 @@ class Label(object):
 
     def set_param(self, param, value):
         # type: (str, str)-> None
+        print('setting param to %s' % param)
+        print('value' + value)
         if param not in self.params.keys():
             raise ValueError('param is not in list of available params')
 

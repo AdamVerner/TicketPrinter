@@ -13,12 +13,14 @@ both should be valid, but EZPL doc should be more valid
 import socket
 import logging
 import sys
-from Label import Label, Image
+import pprint
+from printer.Printer.Label import Label, Image
 
 
 class Printer(object):
 
     data_path = './data/'  # must end with '/'
+    pp=pprint.PrettyPrinter(2)
 
     def __init__(self, printer_ip, printer_port=9100):
         # type: (str, int) -> None
@@ -36,12 +38,11 @@ class Printer(object):
         """
         if you're uploading label with an image, make sure, that you've uploaded the image first
         """
-
         self.log.debug('sending message to : %s:%s. msh = %s', self.ip, self.port, repr(label.zpl))
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(2.0)
         s.connect((self.ip, self.port))
-        s.send(label.zpl)
+        s.send(label.zpl.encode())
         s.close()
 
     def upload_image(self, image):
@@ -49,9 +50,9 @@ class Printer(object):
         """
         """
 
-        b = bytes('\r\n\r\n~MDELG,{name}\r\n~EB,{name},{size}\r\n'.format(name=image.name, size=len(image.data)))
+        b = bytes('\r\n\r\n~MDELG,{name}\r\n~EB,{name},{size}\r\n'.format(name=image.name, size=len(image.data)).encode())
         b += image.data
-        b += '\r\n'
+        b += b'\r\n'
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(2.0)
@@ -67,7 +68,6 @@ class Printer(object):
         for img in label.images:
             self.log.debug('uploading img %s', img.name)
             self.upload_image(img)
-
         self.send(label)
 
 
