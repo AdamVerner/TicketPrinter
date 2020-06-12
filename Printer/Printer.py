@@ -14,7 +14,7 @@ import socket
 import logging
 import sys
 import pprint
-from printer.Printer.Label import Label, Image
+from . import Label
 
 
 class Printer(object):
@@ -34,7 +34,7 @@ class Printer(object):
         self.port = printer_port
 
     def send(self, label):
-        # type: (Label)-> None
+        # type: (Label.)-> None
         """
         if you're uploading label with an image, make sure, that you've uploaded the image first
         """
@@ -96,7 +96,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG)
 
     p = Printer(sys.argv[1])
-    l = Label(name=sys.argv[2])
+    l = Label.Label(name=sys.argv[2])
 
     del sys.argv[0:3]
 
