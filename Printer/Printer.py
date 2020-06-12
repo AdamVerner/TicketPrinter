@@ -39,6 +39,7 @@ class Printer(object):
 
         self.log.debug('sending message to : %s:%s. msh = %s', self.ip, self.port, repr(label.zpl))
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(2.0)
         s.connect((self.ip, self.port))
         s.send(label.zpl)
         s.close()
@@ -53,7 +54,7 @@ class Printer(object):
         b += '\r\n'
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(5.0)
+        s.settimeout(2.0)
         s.connect((self.ip, self.port))
         s.send(b)
         s.close()
