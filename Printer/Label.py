@@ -4,7 +4,9 @@
 """
 import os
 import re
-default_path = './data/'
+from TesterController.Libs.utils import dynamic_path
+
+default_path = dynamic_path('./data/', __file__)
 
 
 def get_available_names(path=default_path):
@@ -61,7 +63,7 @@ class Label(object):
         if not name:
             name = ''
 
-        self.path = path + name + '/'
+        self.path = path + '/' +  name + '/'
         self.name = name
 
         if zpl:
