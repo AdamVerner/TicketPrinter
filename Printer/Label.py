@@ -4,10 +4,10 @@
 """
 import os
 import re
-from TesterController.Libs.utils import dynamic_path
+# from TesterController.Libs.utils import dynamic_path
 
-default_path = dynamic_path('./data/', __file__)
-
+# default_path = dynamic_path('./data/', __file__)
+default_path = './data/'
 
 def get_available_names(path=default_path):
     folders = os.listdir(path)
