@@ -1,21 +1,22 @@
 from __future__ import print_function
 import re
+from typing import List
+
 from Label import Image, Label
 
 
-def convert_data(data, preserve_label=False):
-    # type: (str, bool)-> list
-
+def convert_data(data: bytes, preserve_label=False) -> list:
     images = get_images(data)
     if not images:
+        data = data.decode('utf-8')
         if not preserve_label:
             data = convert_to_params(data)
         return [Label(zpl=data)]
     return images
 
 
-def get_images(data):
-    regex = r'(~MDELG,(.*)\r\n~EB,\2,(\d+)\r\n)'
+def get_images(data: bytes) -> List[Image]:
+    regex = rb'(~MDELG,(.*)\r\n~EB,\2,(\d+)\r\n)'
     ret = []
 
     headers = re.finditer(regex, data)
@@ -35,7 +36,7 @@ def get_images(data):
     for idx, itm in enumerate(stops):
         mg = data[itm: starts[idx + 1] - 2]
         print('len = %s, lens = %s' % (len(mg), lens[idx]))
-        ret.append(Image(names[idx], mg))
+        ret.append(Image(names[idx].decode('utf-8'), mg))
 
     return ret
 
@@ -55,7 +56,7 @@ def convert_to_params(data):
         'version': r'(WiFi, FR)'
     }
 
-    print('\nFOUND Following mathces :')
+    print('\nFOUND Following matches :')
     for name in regs.keys():
 
         replaceable = '{' + name + '}'
@@ -65,7 +66,6 @@ def convert_to_params(data):
             for m in match:
                 data = data.replace(m, replaceable)
             print('\t', name, '\t', match)
-    print()
     return data
 
 

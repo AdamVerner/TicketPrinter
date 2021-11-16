@@ -13,14 +13,12 @@ both should be valid, but EZPL doc should be more valid
 import socket
 import logging
 import sys
-import pprint
-from . import Label
+from Label import Label, Image
 
 
 class Printer(object):
 
     data_path = './data/'  # must end with '/'
-    pp=pprint.PrettyPrinter(2)
 
     def __init__(self, printer_ip, printer_port=9100):
         # type: (str, int) -> None
@@ -33,8 +31,7 @@ class Printer(object):
         self.ip = printer_ip
         self.port = printer_port
 
-    def send(self, label):
-        # type: (Label.)-> None
+    def send(self, label: Label):
         """
         if you're uploading label with an image, make sure, that you've uploaded the image first
         """
@@ -42,7 +39,7 @@ class Printer(object):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(2.0)
         s.connect((self.ip, self.port))
-        s.send(label.zpl.encode())
+        s.send(label.zpl.encode('utf-8'))
         s.close()
 
     def upload_image(self, image):
@@ -50,7 +47,7 @@ class Printer(object):
         """
         """
 
-        b = bytes('\r\n\r\n~MDELG,{name}\r\n~EB,{name},{size}\r\n'.format(name=image.name, size=len(image.data)).encode())
+        b = f'\r\n\r\n~MDELG,{image.name}\r\n~EB,{image.name},{len(image.data)}\r\n'.encode('utf-8')
         b += image.data
         b += b'\r\n'
 
@@ -60,14 +57,14 @@ class Printer(object):
         s.send(b)
         s.close()
 
-    def print_(self, label):
-        # type: (Label)-> None
+    def print_(self, label: Label):
         """
         prints provided label
         """
         for img in label.images:
             self.log.debug('uploading img %s', img.name)
             self.upload_image(img)
+
         self.send(label)
 
 
@@ -94,9 +91,12 @@ usage: python Printer.py printer_ip label_name [OPTIONS] [PARAMS]
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
+    if len(sys.argv) != 3:
+        print(f"Usage is ./{sys.argv[0]} PRINTER_HOST LABEL_PATH")
+        return 1
 
     p = Printer(sys.argv[1])
-    l = Label.Label(name=sys.argv[2])
+    l = Label(name=sys.argv[2])
 
     del sys.argv[0:3]
 

@@ -4,10 +4,10 @@
 """
 import os
 import re
-# from TesterController.Libs.utils import dynamic_path
+from pathlib import Path
 
-# default_path = dynamic_path('./data/', __file__)
 default_path = './data/'
+
 
 def get_available_names(path=default_path):
     folders = os.listdir(path)
@@ -22,18 +22,21 @@ def get_available_names(path=default_path):
 
 
 def save(obj, path=default_path):
-    if not os.path.isdir(path):
-        os.mkdir(path)
+    Path(path).mkdir(parents=True, exist_ok=True)
+
     if isinstance(obj, Image):
-        with open(path + obj.name + '.bmp', 'wb') as f:
-            print('saving to : %s' % path + obj.name + '.bmp')
+        print(f'saving {os.path.join(path, obj.name + ".bmp")}')
+        with open(os.path.join(path, obj.name + ".bmp") , 'wb') as f:
             f.write(obj.data)
+
     elif isinstance(obj, Label):
         if obj.images_uploaded:
             for image in obj.images:
                 save(image, obj.path)
+
         else:
-            with open(path + 'label.template', 'wb') as f:
+            print(f'saving {os.path.join(path, "label.template")}')
+            with open(os.path.join(path, "label.template"), 'w') as f:
                 f.write(obj.raw_zpl)
 
 
@@ -63,7 +66,7 @@ class Label(object):
         if not name:
             name = ''
 
-        self.path = path + '/' +  name + '/'
+        self.path = os.path.join(path, name)
         self.name = name
 
         if zpl:
@@ -77,7 +80,7 @@ class Label(object):
             self.zpl = self.zpl.replace('\n', '\r\n')
 
         # make sure there is empty line on the end
-        if self.zpl[-2:] is not '\r\n':
+        if self.zpl[-2:] != '\r\n':
             self.zpl += '\r\n'
 
         for param in re.findall(r'{([^\s]*)}', self.zpl):
@@ -113,18 +116,17 @@ class Label(object):
 
     def set_param(self, param, value):
         # type: (str, str)-> None
-        print('setting param to %s' % param)
-        print('value' + value)
         if param not in self.params.keys():
             raise ValueError('param is not in list of available params')
 
         self.params[param] = value
 
+
     def has_param(self, param):
         return param in self.params.keys()
-    
+
     @property
-    def zpl(self):
+    def zpl(self) -> str:
         data = self.raw_zpl
         for param in self.params.keys():
             replaceable = '{' + param + '}'

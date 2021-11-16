@@ -50,36 +50,32 @@ def main():
     else:
         print('WARNING: automatic parameter detection is still under testing')
 
-    # create ipv4 TCP socket
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # listen on local port
-    print('listening on %s:%d' % (interface, port))
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind((interface, port))
+    print(f"listening on {interface}:{port}")
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
-    s.listen(1)
-    conn, addr = s.accept()
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((interface, port))
 
-    # falsePositive because addr == ('ip', port)
-    # noinspection PyStringFormat
-    print('connection made by: %s:%d' % addr)
+        s.listen(1)
+        while True:
+            conn, addr = s.accept()
+            with conn:
+                # noinspection PyStringFormat
+                print("connection made by: %s:%d" % addr)
 
-    data = ''
-    while True:
-        new_data = conn.recv(512)
-        data += new_data
-        if not new_data:
-            break
-    conn.close()
-    s.close()
-    converted = DataConverter.convert_data(data, preserve_label=preserve_label)
-    for x in converted:
-        print(repr(x))
-        Label.save(x, path=output)
+                data = b''
+                while True:
+                    new_data = conn.recv(512)
+                    data += new_data
+                    if not new_data:
+                        break
 
-    if isinstance(converted[0], Label.Image):
-        main()
+                converted = DataConverter.convert_data(data, preserve_label=preserve_label)
+                for x in converted:
+                    Label.save(x, path=output)
 
+                if isinstance(converted[0], Label.Label):
+                    break
 
 if __name__ == '__main__':
     sys.argv.append('--preserve-label option')
